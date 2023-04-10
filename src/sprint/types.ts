@@ -71,4 +71,5 @@ export interface ErrorData {
 	 * The error message for the failed request.
 	 */
 	error: Error;
+	message?: string;
 }
