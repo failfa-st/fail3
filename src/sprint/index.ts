@@ -6,6 +6,7 @@ import AI from "../ai/index.js";
 import type { Role } from "../ai/types.js";
 import { createIssue } from "../github/issues.js";
 import { createPullRequest } from "../github/pull-requests.js";
+import parsers from "../parsers/index.js";
 
 import type { ErrorData, Sprint, SprintData, UserStory } from "./types.js";
 import {
@@ -85,7 +86,7 @@ export async function doSprint(
 		// Create a new sprint based on the goal.
 		const sprint = await createSprint(goal, PROJECT_MANAGER, { cwd });
 		console.log(`✅ - Created Sprint for "${goal}"`);
-		const parsedSprint: Sprint = JSON.parse(sprint.content);
+		const parsedSprint = parsers.json<Sprint>(sprint.content);
 		const { userStories } = parsedSprint;
 
 		// Create issues on GitHub

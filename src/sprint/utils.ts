@@ -5,6 +5,7 @@ import slugify from "@sindresorhus/slugify";
 import type { AxiosError } from "axios";
 
 import type AI from "../ai/index.js";
+import parsers from "../parsers/index.js";
 
 import type { FileInfo, FileType, Sprint, UserStory, ErrorData } from "./types.js";
 
@@ -105,7 +106,7 @@ export function getFilename(name: string, directory: string, type: FileType) {
 export async function createSprint(goal: string, ai: AI, { cwd }: { cwd: string }) {
 	console.log(`⏳ - Preparing Sprint for "${goal}"`);
 	const task = await prepareSprint(goal, ai);
-	const json: Sprint = JSON.parse(task.answer);
+	const json = parsers.json<Sprint>(task.answer);
 	const filePath = path.join(cwd, getFilename(json.scope, "sprints", "json"));
 	const content = addNewlineAtEnd(JSON.stringify(json, null, 2));
 	await fs.writeFile(filePath, content);

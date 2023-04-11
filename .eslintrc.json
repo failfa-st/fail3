@@ -36,6 +36,14 @@
   },
   "overrides": [
     {
+      "files": "*.test.ts",
+      "rules": {
+        "import/no-unresolved": "off",
+        "import/no-unassigned-import": "off",
+        "@typescript-eslint/ban-ts-comment": "off"
+      }
+    },
+    {
       "files": "types.ts",
       "rules": {
         "no-unused-vars": "off"

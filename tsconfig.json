@@ -4,9 +4,16 @@
     "module": "NodeNext",
     "esModuleInterop": true,
     "moduleResolution": "NodeNext",
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
     "target": "ES2022",
     "lib": ["ES2022"],
-    "sourceMap": true
+    "sourceMap": true,
+    "strict": false,
+    "types": ["node", "jest"],
+    "typeRoots": ["./node_modules/@types"],
+    "incremental": true
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "cypress"],
+  "include": ["types/*.d.ts", "**/*.ts"]
 }
