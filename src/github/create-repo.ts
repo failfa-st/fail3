@@ -27,7 +27,7 @@ const techStack = [
 
 const devDependencies = [
 	"@badeball/cypress-cucumber-preprocessor",
-	'@cypress/webpack-preprocessor"',
+	"@cypress/webpack-preprocessor",
 	"cypress",
 ];
 

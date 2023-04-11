@@ -23,7 +23,15 @@ import path from "node:path";
 import process from "node:process";
 import * as url from "node:url";
 
+import { config } from "dotenv";
 import { execa } from "execa";
+
+/**
+ * Loads environment variables from a .env file and configures command-line interface options.
+ * This function should be called before any local imports to ensure that process variables are
+ * loaded correctly.
+ */
+config();
 
 // Use `url.fileURLToPath` to convert the `import.meta.url` to a path to the current directory
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
