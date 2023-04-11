@@ -9,6 +9,15 @@ import type AI from "../ai/index.js";
 import type { FileInfo, FileType, Sprint, UserStory, ErrorData } from "./types.js";
 
 /**
+ * Adds a newline character at the end of a string.
+ * @param {string} text - The string to add a newline character to the end.
+ * @returns {string} The string with a newline character added to the end.
+ */
+export function addNewlineAtEnd(text: string) {
+	return `${text.trim()}\n`;
+}
+
+/**
  * Sends a request to the AI system and returns a promise that resolves to the AI's response.
  *
  * @param {string} task - The task to be processed by the AI.
@@ -98,7 +107,7 @@ export async function createSprint(goal: string, ai: AI, { cwd }: { cwd: string 
 	const task = await prepareSprint(goal, ai);
 	const json: Sprint = JSON.parse(task.answer);
 	const filePath = path.join(cwd, getFilename(json.scope, "sprints", "json"));
-	const content = JSON.stringify(json, null, 2);
+	const content = addNewlineAtEnd(JSON.stringify(json, null, 2));
 	await fs.writeFile(filePath, content);
 	return { filePath, content };
 }
@@ -154,7 +163,7 @@ export async function prepareFeature(story: UserStory, ai: AI) {
 export async function createFeature(story: UserStory, ai: AI, { cwd }: { cwd: string }) {
 	const task = await prepareFeature(story, ai);
 	const filePath = path.join(cwd, getFilename(story.feature, "cypress/e2e", "feature"));
-	const content = task.answer;
+	const content = addNewlineAtEnd(task.answer);
 	await fs.writeFile(filePath, content);
 	return { filePath, content };
 }
@@ -223,7 +232,7 @@ export async function createCypressTest(featureFile: FileInfo, ai: AI, { cwd }: 
 	const task = await prepareCypressTest(featureFile.content, ai);
 	const { name } = path.parse(featureFile.filePath);
 	const filePath = path.join(cwd, getFilename(name, "cypress/e2e", "ts"));
-	const content = task.answer;
+	const content = addNewlineAtEnd(task.answer);
 	await fs.writeFile(filePath, content);
 	return { filePath, content };
 }

@@ -3,19 +3,14 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-import { config } from "dotenv";
 import { execa } from "execa";
 import ora from "ora";
+
+import { projectsDirectory, templatesDirectory } from "../constants.js";
 
 import { octokit } from "./octokit.js";
 import type { ProjectData } from "./types.js";
 import { copyDir } from "./utils.js";
-
-config();
-const CWD = process.cwd();
-const projectsDirectory = path.join(CWD, "../projects");
-
-const templatesDirectory = path.join(CWD, "templates");
 
 const techStack = [
 	"@mui/material",
@@ -28,6 +23,12 @@ const techStack = [
 	"nanoid",
 	"next-auth",
 	"zustand",
+];
+
+const devDependencies = [
+	"@badeball/cypress-cucumber-preprocessor",
+	'@cypress/webpack-preprocessor"',
+	"cypress",
 ];
 
 /**
@@ -54,7 +55,7 @@ export async function initializeProject(projectName: string): Promise<ProjectDat
 	// >>>> START Setup from template
 	// await execa(
 	// 	"npx",
-	// 	["create-next-app", projectName, "--example", "https://github.com/pixelass/pwa-template"],
+	// 	["create-next-app", projectName, "--example", "https://github.com/failfa-st/templates-next-mui"],
 	// 	{
 	// 		cwd: projectsDirectory,
 	// 	}
@@ -67,7 +68,10 @@ export async function initializeProject(projectName: string): Promise<ProjectDat
 	await execa("npx", ["create-next-app", projectName, "--typescript"], {
 		cwd: projectsDirectory,
 	});
-	await execa("npm", ["install", ...techStack], { cwd: projectDirectory });
+	await execa("npm", ["install", "--save-exact", ...techStack], { cwd: projectDirectory });
+	await execa("npm", ["install", "--save-dev", ...devDependencies], {
+		cwd: projectDirectory,
+	});
 
 	// Copy the template directories to the project directory
 	await copyDir(path.join(templatesDirectory, "cypress"), path.join(projectDirectory, "cypress"));

@@ -1,10 +1,13 @@
+import slugify from "@sindresorhus/slugify";
 import type { AxiosError } from "axios";
+import { execa } from "execa";
 
 import AI from "../ai/index.js";
 import type { Role } from "../ai/types.js";
 import { createIssue } from "../github/issues.js";
+import { createPullRequest } from "../github/pull-requests.js";
 
-import type { ErrorData, Sprint, UserStory } from "./types.js";
+import type { ErrorData, Sprint, SprintData, UserStory } from "./types.js";
 import {
 	createCypressTest,
 	createFeature,
@@ -69,7 +72,7 @@ ${acceptanceCriteria.map(point => `- [ ] ${point}`).join(",  \n")}
  * @param {string} options.cwd - The current working directory.
  * @param {string} options.repo - The name of the GitHub repository where the issues will be created.
  *
- * @returns {Promise<{sprint: Sprint}>} - A promise that resolves when all the Cypress tests are created.
+ * @returns {Promise<SprintData>} - A promise that resolves when all the Cypress tests are created.
  *
  * @throws - An error is thrown if there is an error during a sprint.
  */
@@ -77,7 +80,7 @@ export async function doSprint(
 	goal: string,
 	{ PROJECT_MANAGER, QA_ENGINEER }: Partial<Record<Role, AI>>,
 	{ cwd, repo }: { cwd: string; repo: string }
-): Promise<{ sprint: Sprint }> {
+): Promise<SprintData> {
 	try {
 		// Create a new sprint based on the goal.
 		const sprint = await createSprint(goal, PROJECT_MANAGER, { cwd });
@@ -91,7 +94,7 @@ export async function doSprint(
 		// Delay creation of each feature and Cypress test based on a schedule to prevent 429
 		// Errors.
 		const schedule = getSchedule(userStories.length);
-		const cypressTests = await Promise.all(
+		const features = await Promise.all(
 			parsedSprint.userStories.map(async (userStory, index) => {
 				const timestamp = schedule[index];
 				await wait(timestamp);
@@ -100,15 +103,25 @@ export async function doSprint(
 				await wait(timestamp + 2_000);
 				const test = await createCypressTest(feature, QA_ENGINEER, { cwd });
 				console.log(`✅ - Created Cypress Test for "${userStory.feature}"`);
-				return test;
+				return { feature, test };
 			})
 		);
 
-		// Log the number of created BDD features.
-		console.log(`📦 - Created ${cypressTests.length} BDD features`);
+		console.log(`📦 - Created ${features.length} BDD features`);
 		console.log(`✅ - Completed Sprint for "${goal}"`);
 
-		return { sprint: parsedSprint };
+		// Create a branch and push the changes to the remote repository.
+		const sprintName = slugify(parsedSprint.scope);
+		const branchName = `test/${sprintName}`;
+		await execa("git", ["add", "."], { cwd });
+		await execa("git", ["switch", "-c", branchName], { cwd });
+		await execa("git", ["commit", "-m", "test: prepare sprint"], { cwd });
+		await execa("git", ["push", "-u", "origin", branchName], { cwd });
+
+		// Create a pull request for the changes in the remote repository.
+		await createPullRequest(branchName, repo);
+
+		return { sprint: parsedSprint, features, sprintName, branchName };
 	} catch (error: unknown) {
 		// Handle any errors thrown during a sprint.
 		handleError(error as AxiosError<ErrorData>);

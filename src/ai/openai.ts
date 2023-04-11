@@ -1,9 +1,6 @@
 import process from "node:process";
 
-import { config } from "dotenv";
 import { Configuration, OpenAIApi } from "openai";
-
-config();
 
 /**
  * Configures the OpenAI package with the API key stored in the environment variable OPENAI_API_KEY.

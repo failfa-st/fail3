@@ -1,10 +1,6 @@
 import process from "node:process";
 
-import { config } from "dotenv";
-
 import { octokit } from "./octokit.js";
-
-config();
 
 /**
  * Creates a new GitHub issue with the specified title, body, and repository.
