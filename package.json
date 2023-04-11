@@ -20,7 +20,7 @@
   "type": "module",
   "main": "n.a.",
   "scripts": {
-    "dev": "ts-node-esm src/index.ts",
+    "project": "ts-node-esm src/index.ts",
     "prepare": "husky install",
     "spj": "npx sort-package-json",
     "toc": "npx markdown-toc README.md -i"
@@ -41,10 +41,15 @@
     ]
   },
   "dependencies": {
+    "@sindresorhus/slugify": "2.2.0",
+    "@sindresorhus/transliterate": "1.6.0",
     "axios": "1.3.5",
+    "boxen": "7.0.2",
     "chalk": "5.2.0",
     "dotenv": "16.0.3",
+    "execa": "7.1.1",
     "filenamify": "^5.1.1",
+    "@octokit/rest": "19.0.7",
     "globby": "13.1.3",
     "meow": "11.0.0",
     "nanoid": "4.0.2",

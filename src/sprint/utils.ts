@@ -1,11 +1,21 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import slugify from "@sindresorhus/slugify";
 import type { AxiosError } from "axios";
-import filenamify from "filenamify";
 
-import type AI from "./ai/index.js";
+import type AI from "../ai/index.js";
+
 import type { FileInfo, FileType, Sprint, UserStory, ErrorData } from "./types.js";
+
+/**
+ * Adds a newline character at the end of a string.
+ * @param {string} text - The string to add a newline character to the end.
+ * @returns {string} The string with a newline character added to the end.
+ */
+export function addNewlineAtEnd(text: string) {
+	return `${text.trim()}\n`;
+}
 
 /**
  * Sends a request to the AI system and returns a promise that resolves to the AI's response.
@@ -80,7 +90,7 @@ export async function prepareSprint(sprint: string, ai: AI) {
  * @returns {string} The filename.
  */
 export function getFilename(name: string, directory: string, type: FileType) {
-	const safeName = filenamify(name);
+	const safeName = slugify(name);
 	return `${directory}/${safeName.toLocaleLowerCase().replace(/\s+/g, "_")}.${type}`;
 }
 
@@ -88,15 +98,16 @@ export function getFilename(name: string, directory: string, type: FileType) {
  * Creates a new sprint and saves it to a JSON file.
  * @param {string} goal - The goal of the sprint.
  * @param {AI} ai - The AI object representing the project manager.
+ * @param cwd - The current working directory.
  * @returns {Promise<FileInfo>} A promise that resolves to an object containing the file path and
  *   content of the newly created sprint file.
  */
-export async function createSprint(goal: string, ai: AI) {
+export async function createSprint(goal: string, ai: AI, { cwd }: { cwd: string }) {
 	console.log(`⏳ - Preparing Sprint for "${goal}"`);
 	const task = await prepareSprint(goal, ai);
 	const json: Sprint = JSON.parse(task.answer);
-	const filePath = path.join(process.cwd(), getFilename(json.scope, "sprints", "json"));
-	const content = JSON.stringify(json, null, 2);
+	const filePath = path.join(cwd, getFilename(json.scope, "sprints", "json"));
+	const content = addNewlineAtEnd(JSON.stringify(json, null, 2));
 	await fs.writeFile(filePath, content);
 	return { filePath, content };
 }
@@ -145,13 +156,14 @@ export async function prepareFeature(story: UserStory, ai: AI) {
  *
  * @param {UserStory} story - The user story to create a feature file for.
  * @param {AI} ai - The AI representing the QA Engineer responsible for writing the feature file.
+ * @param cwd - The current working directory.
  * @returns {Promise<FileInfo>} A promise that resolves to an object containing the file path and
  *   content of the created feature file.
  */
-export async function createFeature(story: UserStory, ai: AI) {
+export async function createFeature(story: UserStory, ai: AI, { cwd }: { cwd: string }) {
 	const task = await prepareFeature(story, ai);
-	const filePath = path.join(process.cwd(), getFilename(story.feature, "cypress/e2e", "feature"));
-	const content = task.answer;
+	const filePath = path.join(cwd, getFilename(story.feature, "cypress/e2e", "feature"));
+	const content = addNewlineAtEnd(task.answer);
 	await fs.writeFile(filePath, content);
 	return { filePath, content };
 }
@@ -212,14 +224,15 @@ export async function prepareCypressTest(feature: string, ai: AI) {
  *
  * @param {FileInfo} featureFile - The feature file for which to create the Cypress test file.
  * @param {AI} ai - The AI object to use for generating the Cypress test.
+ * @param cwd - The current working directory.
  * @returns {Promise<FileInfo>} A promise that resolves to an object containing the file path and
  *   content of the Cypress test file.
  */
-export async function createCypressTest(featureFile: FileInfo, ai: AI) {
+export async function createCypressTest(featureFile: FileInfo, ai: AI, { cwd }: { cwd: string }) {
 	const task = await prepareCypressTest(featureFile.content, ai);
 	const { name } = path.parse(featureFile.filePath);
-	const filePath = path.join(process.cwd(), getFilename(name, "cypress/e2e", "ts"));
-	const content = task.answer;
+	const filePath = path.join(cwd, getFilename(name, "cypress/e2e", "ts"));
+	const content = addNewlineAtEnd(task.answer);
 	await fs.writeFile(filePath, content);
 	return { filePath, content };
 }
@@ -261,7 +274,7 @@ export function handleError(error: AxiosError<ErrorData>) {
 	if (Object.hasOwn(error, "response")) {
 		console.log("ErrorData:", error.response.data);
 		const { status, statusText, data } = error.response;
-		console.error(status, data?.error?.message ?? statusText);
+		console.error(status, data?.error?.message ?? data?.message ?? statusText);
 	} else {
 		console.error(error);
 	}

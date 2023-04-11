@@ -1,77 +1,113 @@
-import type { AxiosError } from "axios";
-
-import AI from "./ai/index.js";
-import type { Role } from "./ai/types.js";
-import type { ErrorData, Sprint } from "./types.js";
-import {
-	createCypressTest,
-	createFeature,
-	createSprint,
-	getSchedule,
-	handleError,
-	wait,
-} from "./utils.js";
+import boxen from "boxen";
+import chalk from "chalk";
+import { config } from "dotenv";
+import meow from "meow";
 
 /**
- * The AI instance representing a project manager role.
+ * Loads environment variables from a .env file and configures command-line interface options.
+ * This function should be called before any local imports to ensure that process variables are
+ * loaded correctly.
  */
-const PROJECT_MANAGER = new AI({ role: "PROJECT_MANAGER" });
+config();
 
-/**
- * The AI instance representing a QA engineer role.
- */
-const QA_ENGINEER = new AI({ role: "QA_ENGINEER" });
+const {
+	flags,
+	input: [projectName],
+} = meow(
+	`
+${chalk.yellow("Usage")}
+  $ npm run project -- ${chalk.green("<project-name>")} [options]
 
-/**
- * Runs a sprint by creating a sprint, creating features for each user story, and creating Cypress
- * tests for each feature. Delays the creation of each feature and test based on a schedule to
- * prevent 429 Errors.
- *
- * @param {string} goal - The goal of the sprint.
- * @param {Partial<Record<Role, AI>>} - An object containing instances of AI for the project manager
- *   and QA engineer. The `PROJECT_MANAGER` instance of the AI is used to create a sprint and add
- *   user stories. The `QA_ENGINEER` instance of the AI is used to create features and Cypress
- *   tests.
- *
- * @returns {Promise<void>} - A promise that resolves when all the Cypress tests are created.
- *
- * @throws - An error is thrown if there is an error during a sprint.
- */
-async function doSprint(
-	goal: string,
-	{ PROJECT_MANAGER, QA_ENGINEER }: Partial<Record<Role, AI>>
-): Promise<void> {
-	try {
-		// Create a new sprint based on the goal.
-		const sprint = await createSprint(goal, PROJECT_MANAGER);
-		console.log(`✅ - Created Sprint for "${goal}"`);
-		const parsedStory: Sprint = JSON.parse(sprint.content);
-		const { userStories } = parsedStory;
+${chalk.yellow("Options")}
+  --init              Initialize a new project with the specified name
+  --dry-run           Logs the flags and project info
+  --sprint-scope, -s  Set the scope of a sprint and create it with the given name
 
-		// Delay creation of each feature and Cypress test based on a schedule to prevent 429
-		// Errors.
-		const schedule = getSchedule(userStories.length);
-		const cypressTests = await Promise.all(
-			parsedStory.userStories.map(async (userStory, index) => {
-				const timestamp = schedule[index];
-				await wait(timestamp);
-				const feature = await createFeature(userStory, QA_ENGINEER);
-				console.log(`✅ - Created Cucumber Feature for "${userStory.feature}"`);
-				await wait(timestamp + 2_000);
-				const test = await createCypressTest(feature, QA_ENGINEER);
-				console.log(`✅ - Created Cypress Test for "${userStory.feature}"`);
-				return test;
-			})
-		);
-
-		// Log the number of created BDD features.
-		console.log(`📦 - Created ${cypressTests.length} BDD features`);
-		console.log(`✅ - Completed Sprint for "${goal}"`);
-	} catch (error: unknown) {
-		// Handle any errors thrown during a sprint.
-		handleError(error as AxiosError<ErrorData>);
+${chalk.yellow("Examples")}
+  $ npm run project -- my-project --init
+  $ npm run project -- my-project --dry-run
+  $ npm run project -- my-project --sprint-scope "Cookie banner, legal pages, GDPR"
+`,
+	{
+		importMeta: import.meta,
+		flags: {
+			init: {
+				type: "boolean",
+				default: false,
+			},
+			dryRun: {
+				type: "boolean",
+				default: false,
+			},
+			sprintScope: {
+				type: "string",
+				alias: "s",
+			},
+		},
 	}
-}
+);
 
-// Test the sprint
-// await doSprint("Add Cookie banner", { PROJECT_MANAGER, QA_ENGINEER });
+if (flags.dryRun) {
+	console.log(
+		boxen(
+			`
+Only logging flags and project name.
+No further actions will be taken.
+
+Project Name: ${chalk.yellow(projectName)}
+
+Flags: ${JSON.stringify(flags, null, 2)}
+`.trim(),
+			{
+				title: projectName,
+				padding: 1,
+				titleAlignment: "center",
+				borderColor: "yellow",
+				width: 50,
+			}
+		)
+	);
+} else if (flags.init) {
+	console.log(
+		boxen(
+			`
+Creating project
+
+Project Name: ${chalk.yellow(projectName)}
+`.trim(),
+			{
+				title: projectName,
+				padding: 1,
+				titleAlignment: "center",
+				borderColor: "yellow",
+				width: 50,
+			}
+		)
+	);
+	//
+	// await initializeProject(projectName);
+} else if (flags.sprintScope) {
+	console.log(
+		boxen(
+			`
+Creating sprint.
+
+Sprint Scope: ${chalk.yellow(flags.sprintScope)}
+`.trim(),
+			{
+				title: projectName,
+				padding: 1,
+				titleAlignment: "center",
+				borderColor: "yellow",
+				width: 50,
+			}
+		)
+	);
+	//
+	// const projectDirectory = path.join(projectsDirectory, projectName);
+	// await doSprint(
+	// 	flags.sprintScope,
+	// 	{ PROJECT_MANAGER, QA_ENGINEER },
+	// 	{ cwd: projectDirectory, repo: projectName }
+	// );
+}

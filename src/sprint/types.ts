@@ -71,4 +71,28 @@ export interface ErrorData {
 	 * The error message for the failed request.
 	 */
 	error: Error;
+	message?: string;
+}
+
+/**
+ * Represents the data for a sprint including the sprint details, features and tests and the names
+ * of the sprint and branch.
+ */
+export interface SprintData {
+	/**
+	 * The details of the sprint.
+	 */
+	sprint: Sprint;
+	/**
+	 * The features and tests created for the sprint.
+	 */
+	features: { feature: FileInfo; test: FileInfo }[];
+	/**
+	 * The name of the sprint.
+	 */
+	sprintName: string;
+	/**
+	 * The name of the branch created for the sprint.
+	 */
+	branchName: string;
 }
