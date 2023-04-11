@@ -1,4 +1,3 @@
-import { existsSync } from "fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -7,6 +6,7 @@ import { execa } from "execa";
 import ora from "ora";
 
 import { projectsDirectory, templatesDirectory } from "../constants.js";
+import { exists } from "../utils/fs.js";
 
 import { octokit } from "./octokit.js";
 import type { ProjectData } from "./types.js";
@@ -41,21 +41,23 @@ const devDependencies = [
  */
 export async function initializeProject(projectName: string): Promise<ProjectData> {
 	// Creates a new instance of the ora spinner to indicate progress
-	const spinner = ora(`Creating Project ${projectName}`).start();
 
 	// Define the project directory and git repository
 	const projectDirectory = path.join(projectsDirectory, projectName);
 	const gitRepo = `git@github.com:${process.env.GITHUB_OWNER}/${projectName}.git`;
 
+	const spinner = ora(`Creating Project ${projectName}`).start();
 	// Create the projects directory if it doesn't exist
-	if (!existsSync(projectsDirectory)) {
+	const projectsDirectoryExists = await exists(projectsDirectory);
+	if (!projectsDirectoryExists) {
 		spinner.text = "Creating project directory";
 		await fs.mkdir(projectsDirectory, { recursive: true });
 	}
+
 	// >>>> START Setup from template
 	// await execa(
 	// 	"npx",
-	// 	["create-next-app", projectName, "--example", "https://github.com/failfa-st/templates-next-mui"],
+	// 	["create-next-app", projectName, "--example", "https://github.com/failfa-st/templates/next-mui"],
 	// 	{
 	// 		cwd: projectsDirectory,
 	// 	}
