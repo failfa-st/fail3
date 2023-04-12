@@ -31,6 +31,7 @@ Use Nextjs API routes
 Use typescript
 Use switch-case for request.method
 Use prisma as database ORM
+Use import-alias @/*
 
 ## OUTPUT FORMAT
 
