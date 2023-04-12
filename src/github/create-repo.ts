@@ -98,7 +98,10 @@ export async function initializeProject(projectName: string): Promise<ProjectDat
 		name: projectName,
 		private: true,
 	});
-	await execa("git", ["remote", "add", "origin", gitRepo], { cwd: projectDirectory });
+	await execa("git", ["remote", "add", "origin", gitRepo], {
+		stdio: "inherit",
+		cwd: projectDirectory,
+	});
 
 	// Commit and push the project setup
 	await execa("git", ["add", "."], { stdio: "inherit", cwd: projectDirectory });
