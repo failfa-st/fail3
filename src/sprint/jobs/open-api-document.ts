@@ -1,3 +1,12 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+
+import jsYaml from "js-yaml";
+
+import type AI from "../../ai/index.js";
+import { sendRequest } from "../../ai/utils.js";
+import { getFilename } from "../../utils/files.js";
+import { addNewlineAtEnd } from "../../utils/string.js";
 import type { UserStory } from "../types.js";
 
 /**

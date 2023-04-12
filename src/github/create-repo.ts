@@ -2,7 +2,6 @@ import path from "node:path";
 import process from "node:process";
 
 import { execa } from "execa";
-import ora from "ora";
 
 import { projectsDirectory, templatesDirectory } from "../constants.js";
 
@@ -83,6 +82,7 @@ export async function initializeProject(projectName: string): Promise<ProjectDat
 		stdio: "inherit",
 		cwd: projectDirectory,
 	});
+
 	await execa("npm", ["install", "--save-dev", ...devDependencies], {
 		stdio: "inherit",
 		cwd: projectDirectory,
