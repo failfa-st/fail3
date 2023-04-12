@@ -15,3 +15,12 @@ export function dedent(strings: TemplateStringsArray, ...args: (string | boolean
 		.join("")
 		.replace(/^[\t\r]+/gm, "");
 }
+
+/**
+ * Adds a newline character at the end of a string.
+ * @param {string} text - The string to add a newline character to the end.
+ * @returns {string} The string with a newline character added to the end.
+ */
+export function addNewlineAtEnd(text: string) {
+	return `${text.trim()}\n`;
+}
