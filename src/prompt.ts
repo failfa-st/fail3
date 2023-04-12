@@ -4,6 +4,13 @@ import slugify from "@sindresorhus/slugify";
 import inquirer from "inquirer";
 
 import { projectsDirectory } from "./constants.js";
+import { exists } from "./utils/fs.js";
+
+// Create the projects directory if it doesn't exist
+const projectsDirectoryExists = await exists(projectsDirectory);
+if (!projectsDirectoryExists) {
+	await fs.mkdir(projectsDirectory, { recursive: true });
+}
 
 // Read the project directories and store them in an array
 const projects = (await fs.readdir(projectsDirectory, { withFileTypes: true }))

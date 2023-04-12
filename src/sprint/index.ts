@@ -114,10 +114,10 @@ export async function doSprint(
 		// Create a branch and push the changes to the remote repository.
 		const sprintName = slugify(parsedSprint.scope);
 		const branchName = `test/${sprintName}`;
-		await execa("git", ["add", "."], { cwd });
-		await execa("git", ["switch", "-c", branchName], { cwd });
-		await execa("git", ["commit", "-m", "test: prepare sprint"], { cwd });
-		await execa("git", ["push", "-u", "origin", branchName], { cwd });
+		await execa("git", ["switch", "-c", branchName], { stdio: "inherit", cwd });
+		await execa("git", ["add", "."], { stdio: "inherit", cwd });
+		await execa("git", ["commit", "-m", "test: prepare sprint"], { stdio: "inherit", cwd });
+		await execa("git", ["push", "-u", "origin", branchName], { stdio: "inherit", cwd });
 
 		// Create a pull request for the changes in the remote repository.
 		await createPullRequest(branchName, repo);
