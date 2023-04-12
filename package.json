@@ -23,7 +23,6 @@
     "fail3": "./fail3.js"
   },
   "scripts": {
-    "dev": "npx ts-node-esm src/dev.ts",
     "prepare": "husky install",
     "spj": "npx sort-package-json",
     "test": "jest",

@@ -80,25 +80,3 @@ export async function create(story: UserStory, ai: AI, { cwd }: { cwd: string })
 
 	return { filePath: "", content: "" };
 }
-
-type OpenAPIDocument = JSON;
-
-export function parse(openAPIDocument: OpenAPIDocument) {
-	const paths = Object.keys(openAPIDocument.paths);
-
-	const data = paths.map(_path => {
-		const a = {
-			path: _path,
-			methods: openAPIDocument.paths[_path].map(method => {
-				const parameters = {};
-
-				return {
-					method,
-					parameters: method.parameters,
-				};
-			}),
-		};
-
-		return a;
-	});
-}

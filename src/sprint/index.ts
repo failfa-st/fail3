@@ -2,7 +2,7 @@ import slugify from "@sindresorhus/slugify";
 import type { AxiosError } from "axios";
 import { execa } from "execa";
 
-import type AI from "../ai/index.js";
+import AI from "../ai/index.js";
 import type { Role } from "../ai/types.js";
 import { createPullRequest } from "../github/pull-requests.js";
 import parsers from "../parsers/index.js";
@@ -11,8 +11,12 @@ import { getSchedule, wait } from "../utils/timing.js";
 import { create as createCucmberFeature } from "./jobs/cucumber-feature.js";
 import { create as createCypressTest } from "./jobs/cypess-test.js";
 import { create as createSprint } from "./jobs/sprint.js";
+import { create as createServerlessFunction } from "./jobs/serverless-function.js";
+import { create as createOpenAPIDocument } from "./jobs/open-api-document.js";
+
 import type { ErrorData, Sprint, SprintData } from "./types.js";
 import { createIssues, handleError } from "./utils.js";
+import { OpenApiDocument, parseOpenApiDocument } from "../parsers/open-api-document.js";
 
 /**
  * Runs a sprint by creating a sprint, creating features for each user story, and creating Cypress
@@ -63,9 +67,35 @@ export async function doSprint(
 		);
 
 		const filteredDocuments = documents.filter(document => Boolean(document.content));
-		console.log(documents.length, filteredDocuments.length);
-
 		console.log(`📦 - Created ${filteredDocuments.length} OpenAPI documents`);
+
+		const serverlessFunctionSchedule = getSchedule(filteredDocuments.length);
+		const serverlessFunctions = await Promise.all(
+			filteredDocuments.map(async (document, index) => {
+				const timestamp = serverlessFunctionSchedule[index];
+				await wait(timestamp);
+
+				const endpoints = parseOpenApiDocument(
+					parsers.json<OpenApiDocument>(document.content)
+				);
+				return Promise.all(
+					endpoints.map(async endpoint => {
+						const BACKEND_DEVELOPER = new AI({ role: "BACKEND_DEVELOPER" });
+
+						return createServerlessFunction(
+							{
+								content: JSON.stringify(endpoint),
+								filePath: endpoint.path.replace(/^\//, ""),
+							},
+							BACKEND_DEVELOPER,
+							{ cwd }
+						);
+					})
+				);
+			})
+		);
+
+		console.log(`📦 - Created ${serverlessFunctions.length} Nextjs serverless functions`);
 
 		// Create issues on GitHub
 		// await createIssues(userStories, repo);

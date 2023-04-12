@@ -3,12 +3,10 @@ import path from "node:path";
 
 import type AI from "../../ai/index.js";
 import { sendRequest } from "../../ai/utils.js";
-import parsers from "../../parsers/index.js";
+import { extractMarkdownCodeBlock } from "../../parsers/index.js";
 import { getFilename } from "../../utils/files.js";
 import { addNewlineAtEnd } from "../../utils/string.js";
 import type { FileInfo } from "../types.js";
-
-import { parse as parseOpenAPIDocument } from "./open-api-document.js";
 
 /**
  * Returns a prompt to create a Cypress test for the given feature.
@@ -31,6 +29,8 @@ ${dataModel}
 
 Use Nextjs API routes
 Use typescript
+Use switch-case for request.method
+Use prisma as database ORM
 
 ## OUTPUT FORMAT
 
@@ -61,15 +61,12 @@ export async function prepare(dataModel: string, ai: AI) {
  *   content of the Cypress test file.
  */
 export async function create(dataModelFile: FileInfo, ai: AI, { cwd }: { cwd: string }) {
-	const dataModelJson = parsers.json(dataModelFile.content);
-
-	const parsedDocument = parseOpenAPIDocument();
-
 	const task = await prepare(dataModelFile.content, ai);
-	const { name } = path.parse(dataModelFile.filePath);
-	const endpoint = "";
-	const filePath = path.join(cwd, getFilename(endpoint, "pages/api", "ts"));
-	const content = addNewlineAtEnd(task.answer);
+	const filePath = path.join(cwd, getFilename(dataModelFile.filePath, "pages/api", "ts"));
+
+	const extractedAnswer = extractMarkdownCodeBlock(task.answer);
+	const content = addNewlineAtEnd(extractedAnswer.content);
 	await fs.writeFile(filePath, content);
+
 	return { filePath, content };
 }
