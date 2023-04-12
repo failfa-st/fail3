@@ -52,6 +52,19 @@ You exclusively answer with the desired "OUTPUT FORMAT".
 		model: models.smart,
 		system: ``,
 	},
+	SOFTWARE_ARCHITECT: {
+		name: "Software Architect",
+		role: "SOFTWARE_ARCHITECT",
+		temperature: 0.2,
+		historyLimit: 3,
+		maxTokens: 6000,
+		model: models.smart,
+		system: `You are a "Software Architect".
+You create "DATA MODEL" for REST API.
+You always do "YOUR TASK".
+You exclusively answer with the desired "OUTPUT FORMAT".
+`,
+	},
 	QA_ENGINEER: {
 		name: "QA Engineer",
 		role: "QA_ENGINEER",

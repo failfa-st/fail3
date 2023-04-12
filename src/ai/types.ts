@@ -6,6 +6,7 @@ export type Role =
 	| "BACKEND_DEVELOPER"
 	| "PROJECT_MANAGER"
 	| "SCRUM_MANAGER"
+	| "SOFTWARE_ARCHITECT"
 	| "QA_ENGINEER"
 	| "COPY_WRITER";
 
@@ -17,6 +18,7 @@ export type RoleName =
 	| "Backend Developer"
 	| "Project Manager"
 	| "Scrum Manager"
+	| "Software Architect"
 	| "QA Engineer"
 	| "Copy Writer";
 

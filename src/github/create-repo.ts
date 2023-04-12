@@ -77,6 +77,7 @@ export async function initializeProject(projectName: string): Promise<ProjectDat
 
 	// Copy the template directories to the project directory
 	await copyDir(path.join(templatesDirectory, "cypress"), path.join(projectDirectory, "cypress"));
+	await copyDir(path.join(templatesDirectory, "openapi"), path.join(projectDirectory, "openapi"));
 	await copyDir(path.join(templatesDirectory, "sprints"), path.join(projectDirectory, "sprints"));
 	// >>>> END Manual setup
 
@@ -91,7 +92,8 @@ export async function initializeProject(projectName: string): Promise<ProjectDat
 	await execa("git", ["add", "."], { cwd: projectDirectory });
 	await execa("git", ["branch", "-M", "main"], { cwd: projectDirectory });
 	await execa("git", ["commit", "-m", "'chore: project setup'"], { cwd: projectDirectory });
-	await execa("git", ["push", "-u", "origin", "main"], { cwd: projectDirectory });
+	//
+	// await execa("git", ["push", "-u", "origin", "main"], { cwd: projectDirectory });
 
 	// Succeed the spinner and return the details of the new project
 	spinner.succeed(`Created Project ${projectName}`);

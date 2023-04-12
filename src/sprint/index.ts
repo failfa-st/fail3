@@ -12,6 +12,7 @@ import type { ErrorData, Sprint, SprintData, UserStory } from "./types.js";
 import {
 	createCypressTest,
 	createFeature,
+	createOpenAPIDocument,
 	createSprint,
 	getSchedule,
 	handleError,
@@ -27,6 +28,8 @@ export const PROJECT_MANAGER = new AI({ role: "PROJECT_MANAGER" });
  * The AI instance representing a QA engineer role.
  */
 export const QA_ENGINEER = new AI({ role: "QA_ENGINEER" });
+
+export const SOFTWARE_ARCHITECT = new AI({ role: "SOFTWARE_ARCHITECT" });
 
 /**
  * Creates GitHub issues for each user story in the given repository.
@@ -79,7 +82,7 @@ ${acceptanceCriteria.map(point => `- [ ] ${point}`).join(",  \n")}
  */
 export async function doSprint(
 	goal: string,
-	{ PROJECT_MANAGER, QA_ENGINEER }: Partial<Record<Role, AI>>,
+	{ PROJECT_MANAGER, QA_ENGINEER, SOFTWARE_ARCHITECT }: Partial<Record<Role, AI>>,
 	{ cwd, repo }: { cwd: string; repo: string }
 ): Promise<SprintData> {
 	try {
@@ -90,39 +93,62 @@ export async function doSprint(
 		const { userStories } = parsedSprint;
 
 		// Create issues on GitHub
-		await createIssues(userStories, repo);
+		// await createIssues(userStories, repo);
 
 		// Delay creation of each feature and Cypress test based on a schedule to prevent 429
 		// Errors.
 		const schedule = getSchedule(userStories.length);
-		const features = await Promise.all(
+		const documents = await Promise.all(
 			parsedSprint.userStories.map(async (userStory, index) => {
 				const timestamp = schedule[index];
 				await wait(timestamp);
-				const feature = await createFeature(userStory, QA_ENGINEER, { cwd });
-				console.log(`✅ - Created Cucumber Feature for "${userStory.feature}"`);
-				await wait(timestamp + 2_000);
-				const test = await createCypressTest(feature, QA_ENGINEER, { cwd });
-				console.log(`✅ - Created Cypress Test for "${userStory.feature}"`);
-				return { feature, test };
+				const fileInfo = await createOpenAPIDocument(userStory, SOFTWARE_ARCHITECT, {
+					cwd,
+				});
+				return fileInfo;
 			})
 		);
 
-		console.log(`📦 - Created ${features.length} BDD features`);
-		console.log(`✅ - Completed Sprint for "${goal}"`);
+		const filteredDocuments = documents.filter(document => Boolean(document.content));
+		console.log(documents.length, filteredDocuments.length);
 
-		// Create a branch and push the changes to the remote repository.
+		console.log(`📦 - Created ${filteredDocuments.length} OpenAPI documents`);
+
+		// Create issues on GitHub
+		// await createIssues(userStories, repo);
+
+		// Delay creation of each feature and Cypress test based on a schedule to prevent 429
+		// Errors.
+		// const schedule = getSchedule(userStories.length);
+		// const features = await Promise.all(
+		// 	parsedSprint.userStories.map(async (userStory, index) => {
+		// 		const timestamp = schedule[index];
+		// 		await wait(timestamp);
+		// 		const feature = await createFeature(userStory, QA_ENGINEER, { cwd });
+		// 		console.log(`✅ - Created Cucumber Feature for "${userStory.feature}"`);
+		// 		await wait(timestamp + 2_000);
+		// 		const test = await createCypressTest(feature, QA_ENGINEER, { cwd });
+		// 		console.log(`✅ - Created Cypress Test for "${userStory.feature}"`);
+		// 		return { feature, test };
+		// 	})
+		// );
+
+		// console.log(`📦 - Created ${features.length} BDD features`);
+		// console.log(`✅ - Completed Sprint for "${goal}"`);
+
+		// // Create a branch and push the changes to the remote repository.
 		const sprintName = slugify(parsedSprint.scope);
 		const branchName = `test/${sprintName}`;
-		await execa("git", ["add", "."], { cwd });
-		await execa("git", ["switch", "-c", branchName], { cwd });
-		await execa("git", ["commit", "-m", "test: prepare sprint"], { cwd });
-		await execa("git", ["push", "-u", "origin", branchName], { cwd });
+		//
+		// await execa("git", ["add", "."], { cwd });
+		// await execa("git", ["switch", "-c", branchName], { cwd });
+		// await execa("git", ["commit", "-m", "test: prepare sprint"], { cwd });
+		// await execa("git", ["push", "-u", "origin", branchName], { cwd });
 
 		// Create a pull request for the changes in the remote repository.
-		await createPullRequest(branchName, repo);
+		// await createPullRequest(branchName, repo);
 
-		return { sprint: parsedSprint, features, sprintName, branchName };
+		return { sprint: parsedSprint, features: [], sprintName, branchName };
 	} catch (error: unknown) {
 		// Handle any errors thrown during a sprint.
 		handleError(error as AxiosError<ErrorData>);
