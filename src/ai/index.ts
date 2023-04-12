@@ -26,7 +26,13 @@ const personas: Record<Role, Persona> = {
 		historyLimit: 3,
 		maxTokens: 3000,
 		model: models.fast,
-		system: ``,
+		system: `You are a Backend Developer.
+You implement "DATA MODEL".
+You always do "YOUR TASK".
+You always strictly follow the "CODE GUIDE".
+You always strictly follow the "TEMPLATE".
+You exclusively answer with the desired "OUTPUT FORMAT".
+`,
 	},
 	PROJECT_MANAGER: {
 		name: "Project Manager",
@@ -74,8 +80,6 @@ You exclusively answer with the desired "OUTPUT FORMAT".
 		model: models.smart,
 		system: `You are a "QA Engineer".
 You ensure that the "Project" is fully tested.
-You write Cucumber features.
-You write Cypress tests.
 You always do "YOUR TASK".
 You always strictly follow the "CODE GUIDE".
 You always strictly follow the "TEMPLATE".
