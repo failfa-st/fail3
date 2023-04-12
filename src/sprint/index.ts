@@ -2,61 +2,17 @@ import slugify from "@sindresorhus/slugify";
 import type { AxiosError } from "axios";
 import { execa } from "execa";
 
-import AI from "../ai/index.js";
+import type AI from "../ai/index.js";
 import type { Role } from "../ai/types.js";
-import { createIssue } from "../github/issues.js";
 import { createPullRequest } from "../github/pull-requests.js";
 import parsers from "../parsers/index.js";
+import { getSchedule, wait } from "../utils/timing.js";
 
-import type { ErrorData, Sprint, SprintData, UserStory } from "./types.js";
-import {
-	createCypressTest,
-	createFeature,
-	createSprint,
-	getSchedule,
-	handleError,
-	wait,
-} from "./utils.js";
-
-/**
- * The AI instance representing a project manager role.
- */
-export const PROJECT_MANAGER = new AI({ role: "PROJECT_MANAGER" });
-
-/**
- * The AI instance representing a QA engineer role.
- */
-export const QA_ENGINEER = new AI({ role: "QA_ENGINEER" });
-
-/**
- * Creates GitHub issues for each user story in the given repository.
- * @param {UserStory[]} userStories - The array of user stories to create issues for.
- * @param {string} repo - The name of the repository to create issues in.
- * @returns {Promise<void[]>} An array of promises that resolve to the created issues.
- */
-async function createIssues(userStories: UserStory[], repo: string) {
-	return Promise.all(
-		userStories.map(async ({ story, complexity, feature, acceptanceCriteria }) => {
-			await createIssue(
-				feature,
-				`# Feature: ${feature}
-
-## User Story
-
-${story.split(",").join(",  \n")}
-
-## Acceptance Criteria
-
-${acceptanceCriteria.map(point => `- [ ] ${point}`).join(",  \n")}
-
-## Info
-**complexity: ${complexity}**
-`,
-				repo
-			);
-		})
-	);
-}
+import { create as createCucmberFeature } from "./jobs/cucumber-feature.js";
+import { create as createCypressTest } from "./jobs/cypess-test.js";
+import { create as createSprint } from "./jobs/sprint.js";
+import type { ErrorData, Sprint, SprintData } from "./types.js";
+import { createIssues, handleError } from "./utils.js";
 
 /**
  * Runs a sprint by creating a sprint, creating features for each user story, and creating Cypress
@@ -99,7 +55,7 @@ export async function doSprint(
 			parsedSprint.userStories.map(async (userStory, index) => {
 				const timestamp = schedule[index];
 				await wait(timestamp);
-				const feature = await createFeature(userStory, QA_ENGINEER, { cwd });
+				const feature = await createCucmberFeature(userStory, QA_ENGINEER, { cwd });
 				console.log(`✅ - Created Cucumber Feature for "${userStory.feature}"`);
 				await wait(timestamp + 2_000);
 				const test = await createCypressTest(feature, QA_ENGINEER, { cwd });
