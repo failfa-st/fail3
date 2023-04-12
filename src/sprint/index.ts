@@ -114,8 +114,8 @@ export async function doSprint(
 		// Create a branch and push the changes to the remote repository.
 		const sprintName = slugify(parsedSprint.scope);
 		const branchName = `test/${sprintName}`;
-		await execa("git", ["add", "."], { cwd });
 		await execa("git", ["switch", "-c", branchName], { cwd });
+		await execa("git", ["add", "."], { cwd });
 		await execa("git", ["commit", "-m", "test: prepare sprint"], { cwd });
 		await execa("git", ["push", "-u", "origin", branchName], { cwd });
 
