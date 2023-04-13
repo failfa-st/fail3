@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
 import type { ChatCompletionRequestMessage } from "openai";
 
+import { dedent } from "../utils/string.ts";
+
 import { openai } from "./openai.js";
 import type { AIConstructor, Model, Persona, Role, Temperature, Answer } from "./types.js";
 
@@ -17,7 +19,14 @@ const personas: Record<Role, Persona> = {
 		historyLimit: 3,
 		maxTokens: 3000,
 		model: models.fast,
-		system: ``,
+		system: dedent`You are a Frontend Developer.
+		You fetch "DATA MODEL".
+		You always do "YOUR TASK".
+		You prefer TABS over spaces.
+		You always strictly follow the "CODE GUIDE".
+		You always strictly follow the "TEMPLATE".
+		You exclusively answer with the desired "OUTPUT FORMAT".
+		`,
 	},
 	BACKEND_DEVELOPER: {
 		name: "Backend Developer",
