@@ -46,7 +46,7 @@ export interface Sprint {
 /**
  * A string literal type that represents the file type.
  */
-export type FileType = "json" | "md" | "feature" | "ts";
+export type FileType = "json" | "md" | "feature" | "ts" | "tsx" | "yaml";
 
 /**
  * Represents the information about a file including the file path and content.

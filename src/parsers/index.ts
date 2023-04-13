@@ -49,7 +49,7 @@ export interface ExtractedCodeBlock {
  * @param {string} mdString - The Markdown string containing the code block.
  * @returns {ExtractedCodeBlock} An object with the language and content of the code block, or null if no code block is found.
  */
-export function extractMarkdownCodeBlock(mdString: string): ExtractedCodeBlock | null {
+export function extractMarkdownCodeBlock(mdString: string): ExtractedCodeBlock {
 	// The regular expression pattern to match the code block
 	const codeBlockPattern = /(`{3,})(\w*)\n([\s\S]*?)\1/g;
 
@@ -64,8 +64,8 @@ export function extractMarkdownCodeBlock(mdString: string): ExtractedCodeBlock |
 		return { language, content };
 	}
 
-	// No code block found, return null
-	return null;
+	// No code block found, return the original string
+	return { content: mdString };
 }
 
 /**

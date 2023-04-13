@@ -2,10 +2,10 @@ import path from "node:path";
 
 import type AI from "../../ai/index.js";
 import { sendRequest } from "../../ai/utils.js";
-import { trim } from "../../parsers/index.js";
+import { extractMarkdownCodeBlock } from "../../parsers/index.js";
 import { getFilename } from "../../utils/files.js";
 import { writeFile } from "../../utils/fs.js";
-import { addNewlineAtEnd, dedent } from "../../utils/string.js";
+import { addNewlineAtEnd } from "../../utils/string.js";
 import type { FileInfo } from "../types.js";
 
 /**
@@ -14,33 +14,29 @@ import type { FileInfo } from "../types.js";
  * @param {string} feature - The feature for which to create the Cypress test.
  * @returns {string} The prompt for creating a Cypress test.
  */
-export function buildPrompt(feature: string) {
-	return trim(dedent`
-	# E2E Tests
+export function buildPrompt(dataModel: string) {
+	return `# Serverless Function
 
-	## YOUR TASK
+## YOUR TASK
 
-	create a cypress test for the feature file using "@badeball/cypress-cucumber-preprocessor":
+create a serverless function for the "DATA MODEL":
 
-	${feature}
+## DATA MODEL
 
-	## TEMPLATE
+${dataModel}
 
-	import { When } from "@badeball/cypress-cucumber-preprocessor";
+## CODE GUIDE
 
-	When("I click submit", () => {
-	  cy.get('[data-cy="submit"]').click();
-	});
+Use Nextjs API routes
+Use typescript
+Use switch-case for request.method
+Use prisma as database ORM
+Use import-alias @/*
 
-	## CODE GUIDE
+## OUTPUT FORMAT
 
-	Use typescript
-	Exclusive use Given, When, Then (no aliases, like And, But)
-
-	## OUTPUT FORMAT
-
-	valid pure TypeScript and NOTHING ELSE
-	`);
+valid pure TypeScript and NOTHING ELSE
+`;
 }
 
 /**
@@ -51,8 +47,8 @@ export function buildPrompt(feature: string) {
  * @returns {Promise<Answer>} A promise that resolves to the AI's response for creating a Cypress
  *   test.
  */
-export async function prepare(feature: string, ai: AI) {
-	const task = buildPrompt(feature);
+export async function prepare(dataModel: string, ai: AI) {
+	const task = buildPrompt(dataModel);
 	return sendRequest(task, ai);
 }
 
@@ -65,11 +61,13 @@ export async function prepare(feature: string, ai: AI) {
  * @returns {Promise<FileInfo>} A promise that resolves to an object containing the file path and
  *   content of the Cypress test file.
  */
-export async function create(featureFile: FileInfo, ai: AI, { cwd }: { cwd: string }) {
-	const task = await prepare(featureFile.content, ai);
-	const { name } = path.parse(featureFile.filePath);
-	const filePath = path.join(cwd, getFilename(name, "cypress/e2e", "ts"));
-	const content = addNewlineAtEnd(task.answer);
+export async function create(dataModelFile: FileInfo, ai: AI, { cwd }: { cwd: string }) {
+	const task = await prepare(dataModelFile.content, ai);
+	const filePath = path.join(cwd, getFilename(dataModelFile.filePath, "src/pages/api", "ts"));
+
+	const extractedAnswer = extractMarkdownCodeBlock(task.answer);
+	const content = addNewlineAtEnd(extractedAnswer.content);
 	await writeFile(filePath, content);
+
 	return { filePath, content };
 }

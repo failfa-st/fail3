@@ -34,7 +34,7 @@ config();
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 // Join the directory path with entry to obtain the full path to the TypeScript file
-const entry = path.join(__dirname, "src/index.ts");
+const entry = path.join(__dirname, "src/dev.ts");
 
 // Extract any additional command-line arguments and pass them to the TypeScript file
 const argv = process.argv.splice(2);

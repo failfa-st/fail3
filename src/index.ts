@@ -1,6 +1,5 @@
 import path from "node:path";
 
-import boxen from "boxen";
 import chalk from "chalk";
 
 // For CLI usage
@@ -27,42 +26,9 @@ if (init) {
 	if (projectDirectoryExists) {
 		console.log(chalk.red(`Project ${projectName} already initialized`));
 	} else {
-		console.log(
-			boxen(
-				dedent`
-					Creating project
-
-					Project Name: ${chalk.yellow(projectName)}
-				`.trim(),
-				{
-					title: projectName,
-					padding: 1,
-					titleAlignment: "center",
-					borderColor: "yellow",
-					width: 50,
-				}
-			)
-		);
 		await initializeProject(projectName);
 	}
 } else if (sprintScope ?? sprint) {
-	console.log(
-		boxen(
-			dedent`
-				Creating sprint.
-
-				Sprint Scope: ${chalk.yellow(sprintScope)}
-			`.trim(),
-			{
-				title: projectName,
-				padding: 1,
-				titleAlignment: "center",
-				borderColor: "yellow",
-				width: 50,
-			}
-		)
-	);
-
 	// Get the project directory and start the sprint
 	await doSprint({ sprintScope, sprint }, { cwd: projectDirectory, repo: projectName });
 }

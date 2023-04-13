@@ -10,8 +10,6 @@ specified scope.
 
 - [Features](#features)
 - [Getting Started](#getting-started)
-- [Options](#options)
-- [Examples](#examples)
 
 <!-- tocstop -->
 

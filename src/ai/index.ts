@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
 import type { ChatCompletionRequestMessage } from "openai";
 
+import { dedent } from "../utils/string.ts";
+
 import { openai } from "./openai.js";
 import type { AIConstructor, Model, Persona, Role, Temperature, Answer } from "./types.js";
 
@@ -17,7 +19,14 @@ const personas: Record<Role, Persona> = {
 		historyLimit: 3,
 		maxTokens: 3000,
 		model: models.fast,
-		system: ``,
+		system: dedent`You are a Frontend Developer.
+		You fetch "DATA MODEL".
+		You always do "YOUR TASK".
+		You prefer TABS over spaces.
+		You always strictly follow the "CODE GUIDE".
+		You always strictly follow the "TEMPLATE".
+		You exclusively answer with the desired "OUTPUT FORMAT".
+		`,
 	},
 	BACKEND_DEVELOPER: {
 		name: "Backend Developer",
@@ -26,7 +35,13 @@ const personas: Record<Role, Persona> = {
 		historyLimit: 3,
 		maxTokens: 3000,
 		model: models.fast,
-		system: ``,
+		system: `You are a Backend Developer.
+You implement "DATA MODEL".
+You always do "YOUR TASK".
+You always strictly follow the "CODE GUIDE".
+You always strictly follow the "TEMPLATE".
+You exclusively answer with the desired "OUTPUT FORMAT".
+`,
 	},
 	PROJECT_MANAGER: {
 		name: "Project Manager",
@@ -52,6 +67,19 @@ You exclusively answer with the desired "OUTPUT FORMAT".
 		model: models.smart,
 		system: ``,
 	},
+	SOFTWARE_ARCHITECT: {
+		name: "Software Architect",
+		role: "SOFTWARE_ARCHITECT",
+		temperature: 0.2,
+		historyLimit: 3,
+		maxTokens: 6000,
+		model: models.smart,
+		system: `You are a "Software Architect".
+You create "DATA MODEL" for REST API.
+You always do "YOUR TASK".
+You exclusively answer with the desired "OUTPUT FORMAT".
+`,
+	},
 	QA_ENGINEER: {
 		name: "QA Engineer",
 		role: "QA_ENGINEER",
@@ -61,8 +89,6 @@ You exclusively answer with the desired "OUTPUT FORMAT".
 		model: models.smart,
 		system: `You are a "QA Engineer".
 You ensure that the "Project" is fully tested.
-You write Cucumber features.
-You write Cypress tests.
 You always do "YOUR TASK".
 You always strictly follow the "CODE GUIDE".
 You always strictly follow the "TEMPLATE".
