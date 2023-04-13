@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 
 import slugify from "@sindresorhus/slugify";
 import inquirer from "inquirer";
@@ -45,11 +46,31 @@ export async function prompt() {
 				},
 			},
 			{
+				type: "list",
+				loop: false,
+				name: "sprint",
+				message: "Sprint",
+				async choices(answers) {
+					const sprints = (
+						await fs.readdir(path.join(projectsDirectory, answers.project, "sprints"), {
+							withFileTypes: true,
+						})
+					)
+						.filter(dirent => dirent.isFile() && dirent.name.endsWith(".json"))
+						.map(dirent => dirent.name);
+					return ["New Sprint", new inquirer.Separator(), ...sprints];
+				},
+
+				when(answers) {
+					return answers.project !== "New Project";
+				},
+			},
+			{
 				type: "input",
 				name: "sprintScope",
 				message: "Sprint Scope",
 				when(answers) {
-					return answers.project !== "New Project";
+					return answers.sprint === "New Sprint";
 				},
 			},
 		]);
@@ -59,7 +80,8 @@ export async function prompt() {
 					? slugify(rawAnswers.projectName)
 					: rawAnswers.project,
 			sprintScope: rawAnswers.sprintScope,
-			init: !rawAnswers.sprintScope,
+			sprint: rawAnswers.sprint,
+			init: !(rawAnswers.sprintScope ?? rawAnswers.sprint),
 		};
 	} catch (error) {
 		if (error.isTtyError) {

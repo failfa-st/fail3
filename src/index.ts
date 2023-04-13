@@ -10,14 +10,13 @@ import { initializeProject } from "./github/create-repo.js";
 // For Prompt usage
 import { prompt } from "./prompt.js";
 import { doSprint } from "./sprint/index.js";
-import { PROJECT_MANAGER, QA_ENGINEER } from "./sprint/team.js";
 import { exists } from "./utils/fs.js";
 import { dedent } from "./utils/string.js";
 
 // CLI
 // const { init, projectName, sprintScope } = cli();
 // Prompt
-const { init, projectName, sprintScope } = await prompt();
+const { init, projectName, sprint, sprintScope } = await prompt();
 
 const projectDirectory = path.join(projectsDirectory, projectName);
 
@@ -46,7 +45,7 @@ if (init) {
 		);
 		await initializeProject(projectName);
 	}
-} else if (sprintScope) {
+} else if (sprintScope ?? sprint) {
 	console.log(
 		boxen(
 			dedent`
@@ -65,9 +64,5 @@ if (init) {
 	);
 
 	// Get the project directory and start the sprint
-	await doSprint(
-		sprintScope,
-		{ PROJECT_MANAGER, QA_ENGINEER },
-		{ cwd: projectDirectory, repo: projectName }
-	);
+	await doSprint({ sprintScope, sprint }, { cwd: projectDirectory, repo: projectName });
 }
