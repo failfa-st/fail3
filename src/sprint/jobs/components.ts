@@ -1,10 +1,10 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
 import type AI from "../../ai/index.ts";
 import { sendRequest } from "../../ai/utils.ts";
 import { extractMarkdownCodeBlock } from "../../parsers/index.ts";
 import { getFilename } from "../../utils/files.ts";
+import { writeFile } from "../../utils/fs.ts";
 import { addNewlineAtEnd } from "../../utils/string.ts";
 import type { FileInfo, UserStory } from "../types.ts";
 
@@ -23,23 +23,26 @@ create a component for this user story:
 
 ${JSON.stringify(story)}
 
-## DATA MODEL
-
-${dataModel || "no data required"}
+${
+	dataModel
+		? `## DATA MODEL
+${dataModel}`
+		: ""
+}
 
 ## CODE GUIDE
 
 Use Nextjs
 Use typescript
 Use import-alias @/*
-Use useSWR (GET)
 Use @mui/material
-Use axios (POST,PUT,DELETE)
+${dataModel ? "Use useSWR (GET)" : ""}
+${dataModel ? "Use axios (POST,PUT,DELETE)" : ""}
 
 ## OUTPUT FORMAT
 
 valid pure TypeScript and NOTHING ELSE
-`;
+`.replace(/\n\n+/g, "\n\n");
 }
 
 /**
@@ -84,11 +87,11 @@ export async function create(pageData: PageData, ai: AI, { cwd }: { cwd: string 
 		ai
 	);
 
-	const filePath = path.join(cwd, getFilename(pageData.filePath, "components", "tsx"));
+	const filePath = path.join(cwd, getFilename(pageData.filePath, "src/components", "tsx"));
 
 	const extractedAnswer = extractMarkdownCodeBlock(task.answer);
 	const content = addNewlineAtEnd(extractedAnswer.content);
-	await fs.writeFile(filePath, content);
+	await writeFile(filePath, content);
 
 	return { filePath, content };
 }

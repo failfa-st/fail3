@@ -1,10 +1,10 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
 import type AI from "../../ai/index.js";
 import { sendRequest } from "../../ai/utils.js";
 import { extractMarkdownCodeBlock } from "../../parsers/index.js";
 import { getFilename } from "../../utils/files.js";
+import { writeFile } from "../../utils/fs.js";
 import { addNewlineAtEnd } from "../../utils/string.js";
 import type { FileInfo } from "../types.js";
 
@@ -63,11 +63,11 @@ export async function prepare(dataModel: string, ai: AI) {
  */
 export async function create(dataModelFile: FileInfo, ai: AI, { cwd }: { cwd: string }) {
 	const task = await prepare(dataModelFile.content, ai);
-	const filePath = path.join(cwd, getFilename(dataModelFile.filePath, "pages/api", "ts"));
+	const filePath = path.join(cwd, getFilename(dataModelFile.filePath, "src/pages/api", "ts"));
 
 	const extractedAnswer = extractMarkdownCodeBlock(task.answer);
 	const content = addNewlineAtEnd(extractedAnswer.content);
-	await fs.writeFile(filePath, content);
+	await writeFile(filePath, content);
 
 	return { filePath, content };
 }

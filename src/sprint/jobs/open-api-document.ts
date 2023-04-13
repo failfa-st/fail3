@@ -1,4 +1,3 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
 import jsYaml from "js-yaml";
@@ -6,6 +5,7 @@ import jsYaml from "js-yaml";
 import type AI from "../../ai/index.js";
 import { sendRequest } from "../../ai/utils.js";
 import { getFilename } from "../../utils/files.js";
+import { writeFile } from "../../utils/fs.js";
 import { addNewlineAtEnd } from "../../utils/string.js";
 import type { UserStory } from "../types.js";
 
@@ -67,13 +67,13 @@ export async function create(story: UserStory, ai: AI, { cwd }: { cwd: string })
 
 	if (task.answer.trim() !== "null") {
 		const content = addNewlineAtEnd(task.answer);
-		await fs.writeFile(filePath, content);
+		await writeFile(filePath, content);
 
 		const filePathJson = path.join(cwd, getFilename(story.feature, "openapi", "json"));
 		const answerJson = jsYaml.load(task.answer);
 		const contentJson = addNewlineAtEnd(JSON.stringify(answerJson, null, 2));
 		const contentJsonMin = addNewlineAtEnd(JSON.stringify(answerJson));
-		await fs.writeFile(filePathJson, contentJson);
+		await writeFile(filePathJson, contentJson);
 
 		return { filePath: filePathJson, content: contentJsonMin };
 	}

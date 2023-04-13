@@ -1,10 +1,10 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
 import type AI from "../../ai/index.js";
 import { sendRequest } from "../../ai/utils.js";
 import { trim } from "../../parsers/index.js";
 import { getFilename } from "../../utils/files.js";
+import { writeFile } from "../../utils/fs.js";
 import { addNewlineAtEnd, dedent } from "../../utils/string.js";
 import type { FileInfo } from "../types.js";
 
@@ -70,6 +70,6 @@ export async function create(featureFile: FileInfo, ai: AI, { cwd }: { cwd: stri
 	const { name } = path.parse(featureFile.filePath);
 	const filePath = path.join(cwd, getFilename(name, "cypress/e2e", "ts"));
 	const content = addNewlineAtEnd(task.answer);
-	await fs.writeFile(filePath, content);
+	await writeFile(filePath, content);
 	return { filePath, content };
 }

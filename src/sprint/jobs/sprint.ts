@@ -1,10 +1,10 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 
 import type AI from "../../ai/index.js";
 import { sendRequest } from "../../ai/utils.js";
 import parsers, { trim } from "../../parsers/index.js";
 import { getFilename } from "../../utils/files.js";
+import { writeFile } from "../../utils/fs.js";
 import { addNewlineAtEnd, dedent } from "../../utils/string.js";
 import type { Sprint } from "../types.js";
 
@@ -75,6 +75,6 @@ export async function create(goal: string, ai: AI, { cwd }: { cwd: string }) {
 	const json = parsers.json<Sprint>(task.answer);
 	const filePath = path.join(cwd, getFilename(json.scope, "sprints", "json"));
 	const content = addNewlineAtEnd(JSON.stringify(json, null, 2));
-	await fs.writeFile(filePath, content);
+	await writeFile(filePath, content);
 	return { filePath, content };
 }
