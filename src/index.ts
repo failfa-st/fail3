@@ -17,7 +17,7 @@ import { dedent } from "./utils/string.js";
 // CLI
 // const { init, projectName, sprintScope } = cli();
 // Prompt
-const { init, projectName, sprintScope } = await prompt();
+const { init, projectName, sprint, sprintScope } = await prompt();
 
 const projectDirectory = path.join(projectsDirectory, projectName);
 
@@ -46,7 +46,7 @@ if (init) {
 		);
 		await initializeProject(projectName);
 	}
-} else if (sprintScope) {
+} else if (sprintScope ?? sprint) {
 	console.log(
 		boxen(
 			dedent`
@@ -66,7 +66,7 @@ if (init) {
 
 	// Get the project directory and start the sprint
 	await doSprint(
-		sprintScope,
+		{ sprintScope, sprint },
 		{ PROJECT_MANAGER, QA_ENGINEER },
 		{ cwd: projectDirectory, repo: projectName }
 	);
