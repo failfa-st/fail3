@@ -10,7 +10,6 @@ import { initializeProject } from "./github/create-repo.js";
 // For Prompt usage
 import { prompt } from "./prompt.js";
 import { doSprint } from "./sprint/index.js";
-import { PROJECT_MANAGER, QA_ENGINEER, SOFTWARE_ARCHITECT } from "./sprint/team.js";
 import { exists } from "./utils/fs.js";
 import { dedent } from "./utils/string.js";
 
@@ -65,9 +64,5 @@ if (init) {
 	);
 
 	// Get the project directory and start the sprint
-	await doSprint(
-		{ sprintScope, sprint },
-		{ PROJECT_MANAGER, QA_ENGINEER, SOFTWARE_ARCHITECT },
-		{ cwd: projectDirectory, repo: projectName }
-	);
+	await doSprint({ sprintScope, sprint }, { cwd: projectDirectory, repo: projectName });
 }
