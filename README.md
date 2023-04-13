@@ -10,8 +10,6 @@ specified scope.
 
 - [Features](#features)
 - [Getting Started](#getting-started)
-- [Options](#options)
-- [Examples](#examples)
 
 <!-- tocstop -->
 
@@ -59,20 +57,3 @@ information.
   access
 - `OPENAI_API_KEY`: Generate a key by signing up at https://platform.openai.com/signup
 - `GITHUB_OWNER`: Your GitHub username
-
-## Options
-
-| Option           | Alias | Type    | Description                                                 |
-| ---------------- | ----- | ------- | ----------------------------------------------------------- |
-| `--init`         |       | boolean | Initialize a new project with the specified name            |
-| `--help`         |       | boolean | Logs the help for the cli                                   |
-| `--dry-run`      |       | boolean | Logs the flags and project info                             |
-| `--sprint-scope` | `-s`  | string  | Set the scope of a sprint and create it with the given name |
-
-## Examples
-
-```shell
-$ ./fail3.js my-project --init
-$ ./fail3.js my-project --dry-run
-$ ./fail3.js my-project --sprint-scope "Cookie banner, legal pages, GDPR"
-```
