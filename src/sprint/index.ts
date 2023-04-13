@@ -6,17 +6,19 @@ import AI from "../ai/index.js";
 import type { Role } from "../ai/types.js";
 import { createPullRequest } from "../github/pull-requests.js";
 import parsers from "../parsers/index.js";
+import type { OpenApiDocument } from "../parsers/open-api-document.js";
+import { parseOpenApiDocument } from "../parsers/open-api-document.js";
 import { getSchedule, wait } from "../utils/timing.js";
 
+import type { PageData } from "./jobs/components.js";
+import { create as createComponents } from "./jobs/components.js";
 import { create as createCucmberFeature } from "./jobs/cucumber-feature.js";
 import { create as createCypressTest } from "./jobs/cypess-test.js";
-import { create as createSprint } from "./jobs/sprint.js";
-import { create as createServerlessFunction } from "./jobs/serverless-function.js";
 import { create as createOpenAPIDocument } from "./jobs/open-api-document.js";
-
+import { create as createServerlessFunction } from "./jobs/serverless-function.js";
+import { create as createSprint } from "./jobs/sprint.js";
 import type { ErrorData, Sprint, SprintData } from "./types.js";
 import { createIssues, handleError } from "./utils.js";
-import { OpenApiDocument, parseOpenApiDocument } from "../parsers/open-api-document.js";
 
 /**
  * Runs a sprint by creating a sprint, creating features for each user story, and creating Cypress
@@ -96,6 +98,46 @@ export async function doSprint(
 		);
 
 		console.log(`📦 - Created ${serverlessFunctions.length} Nextjs serverless functions`);
+
+		// We iterate over the userStories, we assume that for each story there is 1 document
+		// the OpenAPI Document might be null
+		// we need both the story and the openAPI document
+		const componentsSchedule = getSchedule(userStories.length);
+		const components = await Promise.all(
+			userStories.map(async (story, index) => {
+				const timestamp = componentsSchedule[index];
+				await wait(timestamp);
+
+				const document = documents[index];
+
+				const endpoints = parseOpenApiDocument(
+					parsers.json<OpenApiDocument>(document.content)
+				);
+
+				return Promise.all(
+					endpoints.map(async endpoint => {
+						const FRONTEND_DEVELOPER = new AI({ role: "FRONTEND_DEVELOPER" });
+
+						const pageData: PageData = {
+							// TODO: We have to think about the name here
+							// as the cart could be anything
+							filePath: endpoint.path.replace(/^\//, ""),
+							contentData: {
+								story,
+								dataModelFile: {
+									content: JSON.stringify(endpoint),
+									filePath: "",
+								},
+							},
+						};
+
+						return createComponents(pageData, FRONTEND_DEVELOPER, { cwd });
+					})
+				);
+			})
+		);
+
+		console.log(`📦 - Created ${components.length} components`);
 
 		// Create issues on GitHub
 		// await createIssues(userStories, repo);
