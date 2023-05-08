@@ -2,6 +2,8 @@
 
 <p align="center"><img src="assets/logo.png" alt="logo" width="200"/></p>
 
+[![Discord](https://img.shields.io/discord/1091306623819059300?color=7289da&label=Discord&logo=discord&logoColor=fff&style=for-the-badge)](https://discord.com/invite/m3TBB9XEkb)
+
 This project contains a script called `fail3.js`, which is a command-line interface (CLI) utility to
 manage software projects. It allows you to initialize new projects and create sprints with a
 specified scope.
